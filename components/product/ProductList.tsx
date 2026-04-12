@@ -1,45 +1,161 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { getProducts } from "@/lib/api";
+import { useEffect, useState } from "react";
+import { getProducts, Product } from "@/lib/api";
 
-interface Product {
-  id: string | number;
-  title: string;
-  price: number;
-  thumbnail: string;
-}
+export default function ProductList() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [category, setCategory] = useState("all");
+  const [sort, setSort] = useState("");
+  const [availability, setAvailability] = useState("all");
+  const [loading, setLoading] = useState(true);
 
-export default async function ProductList() {
-  const products = await getProducts();
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        const data = await getProducts();
+        setProducts(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProducts();
+  }, []);
+
+  const filteredProducts = products.filter((p) => {
+    const categoryMatch = category === "all" ? true : p.category === category;
+
+    const availabilityMatch =
+      availability === "all"
+        ? true
+        : availability === "in"
+          ? p.stock > 0
+          : p.stock === 0;
+
+    return categoryMatch && availabilityMatch;
+  });
+
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sort === "low") return a.price - b.price;
+    if (sort === "high") return b.price - a.price;
+    if (sort === "rating") return b.rating - a.rating;
+    return 0;
+  });
+
+  const categories = ["all", ...new Set(products.map((p) => p.category))];
+
+  if (loading) {
+    return <p className="p-10 text-center text-gray-500">Loading...</p>;
+  }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {products.map((product: Product) => (
-        <Link key={product.id} href={`/products/${product.id}`}>
-          <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition duration-300 cursor-pointer">
-            <div className="relative h-48">
-              <Image
-                src={product.thumbnail}
-                alt={product.title}
-                fill
-                className="object-contain"
-              />
-            </div>
+    <div className="px-6 py-10 max-w-7xl mx-auto">
+      <div className="mb-10 text-center">
+        <h1 className="text-3xl font-bold">Explore Products</h1>
+        <p className="text-gray-500 mt-2">
+          Filter, sort and find your best products
+        </p>
+      </div>
 
-            <div className="p-4">
-              <h2 className="text-lg font-semibold line-clamp-1">
-                {product.title}
-              </h2>
+      <div className="bg-gray-50 p-4 rounded-2xl mb-10 flex flex-col md:flex-row gap-4 justify-center">
+        <div className="relative w-full md:w-56">
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full appearance-none border border-gray-300 bg-white px-4 py-3 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-black transition">
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat.charAt(0).toUpperCase() + cat.slice(1)}
+              </option>
+            ))}
+          </select>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+            ▼
+          </span>
+        </div>
 
-              <p className="text-gray-500 text-sm mt-1">${product.price}</p>
+        <div className="relative w-full md:w-56">
+          <select
+            value={availability}
+            onChange={(e) => setAvailability(e.target.value)}
+            className="w-full appearance-none border border-gray-300 bg-white px-4 py-3 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-black transition">
+            <option value="all">All</option>
+            <option value="in">In Stock</option>
+            <option value="out">Out of Stock</option>
+          </select>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+            ▼
+          </span>
+        </div>
 
-              <button className="mt-3 w-full bg-black text-white py-2 rounded-xl hover:bg-gray-800 transition">
-                View Details
-              </button>
-            </div>
-          </div>
-        </Link>
-      ))}
+        <div className="relative w-full md:w-56">
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className="w-full appearance-none border border-gray-300 bg-white px-4 py-3 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-black transition">
+            <option value="">Sort By</option>
+            <option value="low">Price Low to High</option>
+            <option value="high">Price High to Low</option>
+            <option value="rating">Top Rated</option>
+          </select>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+            ▼
+          </span>
+        </div>
+      </div>
+
+      {sortedProducts.length === 0 ? (
+        <p className="text-center text-gray-500">No products found</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {sortedProducts.map((product) => (
+            <Link key={product.id} href={`/products/${product.id}`}>
+              <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1 transition duration-300 cursor-pointer">
+                <div className="relative h-48 bg-gray-100">
+                  <Image
+                    src={product.thumbnail}
+                    alt={product.title}
+                    fill
+                    className="object-contain p-4"
+                  />
+                </div>
+
+                <div className="p-4">
+                  <h2 className="text-lg font-semibold line-clamp-1">
+                    {product.title}
+                  </h2>
+
+                  <p className="text-gray-500 text-sm mt-1 capitalize">
+                    {product.category}
+                  </p>
+
+                  <p className="text-yellow-500 text-sm">⭐ {product.rating}</p>
+
+                  <p className="text-lg font-bold mt-2 text-black">
+                    ${product.price}
+                  </p>
+
+                  <p
+                    className={`text-xs mt-1 ${
+                      product.stock > 0 ? "text-green-600" : "text-red-500"
+                    }`}>
+                    {product.stock > 0 ? "In Stock" : "Out of Stock"}
+                  </p>
+
+                  <button className="mt-4 w-full bg-black text-white py-2 rounded-xl hover:bg-gray-800 transition">
+                    View Details
+                  </button>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
