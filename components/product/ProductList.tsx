@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { getProducts, Product } from "@/lib/api";
+import ProductCard from "./ProductCard";
 
 export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -62,12 +61,12 @@ export default function ProductList() {
         </p>
       </div>
 
-      <div className="bg-gray-50 p-4 rounded-2xl mb-10 flex flex-col md:flex-row gap-4 justify-center">
-        <div className="relative w-full md:w-56">
+      <div className="bg-gray-50 p-4 rounded-2xl mb-10 flex flex-col md:flex-row gap-4 justify-center ">
+        <div className="relative w-full md:w-56 ">
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full appearance-none border border-gray-300 bg-white px-4 py-3 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-black transition">
+            className="w-full appearance-none border border-gray-300 bg-white px-4 py-3 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-black transition cursor-pointer ">
             {categories.map((cat) => (
               <option key={cat} value={cat}>
                 {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -83,7 +82,7 @@ export default function ProductList() {
           <select
             value={availability}
             onChange={(e) => setAvailability(e.target.value)}
-            className="w-full appearance-none border border-gray-300 bg-white px-4 py-3 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-black transition">
+            className="w-full appearance-none border border-gray-300 bg-white px-4 py-3 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-black transition cursor-pointer ">
             <option value="all">All</option>
             <option value="in">In Stock</option>
             <option value="out">Out of Stock</option>
@@ -97,7 +96,7 @@ export default function ProductList() {
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value)}
-            className="w-full appearance-none border border-gray-300 bg-white px-4 py-3 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-black transition">
+            className="w-full appearance-none border border-gray-300 bg-white px-4 py-3 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-black transition cursor-pointer ">
             <option value="">Sort By</option>
             <option value="low">Price Low to High</option>
             <option value="high">Price High to Low</option>
@@ -114,45 +113,7 @@ export default function ProductList() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {sortedProducts.map((product) => (
-            <Link key={product.id} href={`/products/${product.id}`}>
-              <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1 transition duration-300 cursor-pointer">
-                <div className="relative h-48 bg-gray-100">
-                  <Image
-                    src={product.thumbnail}
-                    alt={product.title}
-                    fill
-                    className="object-contain p-4"
-                  />
-                </div>
-
-                <div className="p-4">
-                  <h2 className="text-lg font-semibold line-clamp-1">
-                    {product.title}
-                  </h2>
-
-                  <p className="text-gray-500 text-sm mt-1 capitalize">
-                    {product.category}
-                  </p>
-
-                  <p className="text-yellow-500 text-sm">⭐ {product.rating}</p>
-
-                  <p className="text-lg font-bold mt-2 text-black">
-                    ${product.price}
-                  </p>
-
-                  <p
-                    className={`text-xs mt-1 ${
-                      product.stock > 0 ? "text-green-600" : "text-red-500"
-                    }`}>
-                    {product.stock > 0 ? "In Stock" : "Out of Stock"}
-                  </p>
-
-                  <button className="mt-4 w-full bg-black text-white py-2 rounded-xl hover:bg-gray-800 transition">
-                    View Details
-                  </button>
-                </div>
-              </div>
-            </Link>
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       )}

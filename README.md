@@ -36,6 +36,11 @@ The application allows users to browse products, view product details, and manag
 - Loading State Handling
 - Error Handling
 
+### Modern React Feature
+
+- Used React 19 `useOptimistic` hook for instant UI updates when adding products to cart
+- Improves user experience by providing immediate feedback before state sync
+
 ### Filtering & Sorting (Implemented)
 
 - Category-based Filtering

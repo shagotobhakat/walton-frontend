@@ -1,25 +1,33 @@
 "use client";
 
+import { useOptimistic } from "react";
 import { useCartStore } from "@/store/cartStore";
-import { Product } from "@/lib/api";
+
+type Product = {
+  id: number;
+  title: string;
+  price: number;
+  thumbnail: string;
+};
 
 export default function AddToCartButton({ product }: { product: Product }) {
   const addToCart = useCartStore((state) => state.addToCart);
 
+  const [optimisticCount, addOptimistic] = useOptimistic(
+    0,
+    (state) => state + 1,
+  );
+
+  const handleAdd = () => {
+    addOptimistic(optimisticCount);
+    addToCart(product);
+  };
+
   return (
     <button
-      onClick={() => {
-        console.log("clicked");
-
-        addToCart({
-          id: product.id,
-          title: product.title,
-          price: product.price,
-          thumbnail: product.thumbnail,
-        });
-      }}
-      className="mt-6 bg-black text-white px-6 py-2 rounded-xl hover:bg-gray-800 transition">
-      Add to Cart
+      onClick={handleAdd}
+      className="mt-4 w-full bg-black text-white py-2 rounded-xl hover:bg-gray-800 transition">
+      Add to Cart {optimisticCount > 0 && `(${optimisticCount})`}
     </button>
   );
 }
