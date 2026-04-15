@@ -1,6 +1,6 @@
 "use client";
 
-import { useOptimistic } from "react";
+import { useOptimistic, startTransition } from "react";
 import { useCartStore } from "@/store/cartStore";
 
 type Product = {
@@ -13,14 +13,16 @@ type Product = {
 export default function AddToCartButton({ product }: { product: Product }) {
   const addToCart = useCartStore((state) => state.addToCart);
 
-  const [optimisticCount, addOptimistic] = useOptimistic(
+  const [optimisticCount, addOptimistic] = useOptimistic<number, number>(
     0,
     (state) => state + 1,
   );
 
   const handleAdd = () => {
-    addOptimistic(optimisticCount);
-    addToCart(product);
+    startTransition(() => {
+      addOptimistic(1);
+      addToCart(product);
+    });
   };
 
   return (
